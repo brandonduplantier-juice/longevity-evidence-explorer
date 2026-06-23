@@ -1,47 +1,71 @@
 # Longevity Intervention Evidence Explorer
 
 A searchable, plain-language tool that grades popular longevity interventions by how
-strong the evidence actually is, using a transparent rubric, and makes the gap
-between public attention and real evidence visible.
+strong the evidence actually is, using a transparent rubric, and makes the gap between
+public hype and real evidence visible.
 
 Version 1.0.0
 
-## What it does
+## The result
 
-Each intervention is scored on six evidence axes, graded with a fixed rule, and shown
-in a dashboard a non-specialist can read: a sortable table, a per-intervention
-breakdown that explains every score in common language, and an attention-versus-
-evidence scatter that exposes hype gaps (lots of buzz, thin evidence) and underrated
-options (solid evidence, little attention).
+It ships with 11 well-established interventions, graded by a fixed rule. The grade
+distribution is deliberately sobering: **0 are grade A, 2 are B, 7 are C, 2 are D.**
+The strongest evidence today (rapamycin, caloric restriction) earns a B. Nothing
+earns an A, and that ceiling is enforced in code, not by opinion.
 
-## The honest ceiling: grade A is empty
+## In plain English
 
-Grade A requires a human trial showing longer lifespan or lower mortality. No
-longevity intervention has that yet, so nothing is graded A. The strongest evidence
-today (rapamycin, caloric restriction) earns a B. This ceiling is enforced in code,
-not by hand.
+You do not need a science background to read this. Here is what it does and why it is
+built the way it is.
 
-## The rubric
+**The problem it addresses.** The longevity space is full of confident claims:
+supplements, diets, and drugs that supposedly slow aging. Some rest on decades of
+animal studies; some rest on a single mouse experiment or a podcast. It is hard for a
+non-specialist to tell which is which. This tool scores each one on the strength of
+its evidence, in the open, so the reasoning is visible.
 
-Six axes, each scored 0 to 3, summed to a 0 to 18 total and mapped to a letter grade.
-The scores live in the data (auditable); the grading lives in src/rubric.py
-(consistent). The axes: animal lifespan evidence, replication and rigor, consistency
-of effect, human evidence, translational readiness, and safety profile.
+**How a grade is built.** Each intervention is scored on six *evidence axes*, plain
+questions about the quality of the proof: does it extend lifespan in animals, has the
+result been *replicated* (repeated by independent labs, the test of whether a finding
+is real), is the effect consistent, is there *human* evidence, how close is it to
+real-world use, and how safe is it. Each axis gets 0 to 3 points, summed to a 0-to-18
+total, mapped to a letter grade.
 
-## Data and how it stays honest
+**The honest ceiling.** Grade A requires a *human trial* (a controlled study in people)
+showing longer lifespan or lower death rates. No longevity intervention has that yet,
+so nothing can score an A. The code refuses to award one. That single rule is what
+separates this from a hype list: it is honest about how thin even the best evidence is.
 
-This ships with a seed database of 11 well-established interventions, written
-conservatively, each with an author-and-journal citation. It is a starting point, not
-a finished reference. Two safeguards keep it honest:
+**Hype versus evidence, made visible.** Each item also carries an *attention* estimate,
+clearly labeled as an editorial judgment, not a measurement. A scatter plot puts
+attention against evidence, so you can see the hype gaps (loud but thin) and the
+underrated cases (solid but quiet) at a glance.
 
-1. No hardcoded PMIDs. Each row carries a citation query, and src/pubmed.py resolves
-   it to a real PubMed record (metadata only, no abstracts, to respect copyright). A
-   wrong or invented citation returns no hit and is flagged, instead of shipping a
-   fake reference.
-2. Attention is an editorial estimate (1 to 5), clearly labeled as a judgment, not a
-   measurement.
+**Why you can trust the citations.** The tool does not hardcode reference IDs, which
+is how fake citations creep in. Each row carries a search query that is resolved
+against the live PubMed database (the public index of biomedical literature). A wrong
+or invented reference simply returns no match and gets flagged, instead of shipping a
+fake.
 
-Verify each row against its citation and extend the table before relying on it.
+This is a starting database written conservatively, not a finished reference. Verify
+each row against its citation before relying on it.
+
+## How it works (technical)
+
+The scores live in data/interventions.csv (auditable); the grading lives in
+src/rubric.py (consistent, with the grade-A gate hardcoded). src/pubmed.py resolves
+each citation query via the NCBI E-utilities API, metadata only, no abstracts, to
+respect copyright. The app is a Streamlit dashboard: a sortable table, a per-
+intervention breakdown explaining every axis score in common language, and the
+attention-versus-evidence scatter.
+
+## What is in this repo
+
+    run_all.py           validates the data, writes data/graded.csv
+    src/rubric.py        the six-axis rubric and the enforced grade-A gate
+    src/pubmed.py        resolves citation queries to real PubMed records
+    app.py               the dashboard (Streamlit)
+    data/interventions.csv  the 11 seed rows you can audit and extend
 
 ## Run (Windows)
 
@@ -51,23 +75,28 @@ Verify each row against its citation and extend the table before relying on it.
     .venv\Scripts\python.exe run_all.py --pubmed
     .venv\Scripts\python.exe -m streamlit run app.py
 
-run_all.py validates the data and writes data/graded.csv. The --pubmed pass resolves
-real citations into data/citations.csv, which the app then shows directly.
-
-## Extend it
-
-Add a row to data/interventions.csv with the six axis scores (0 to 3), a conservative
-evidence summary, an attention estimate, and an author-and-topic citation query, then
-rerun run_all.py to re-grade. Keep every claim sourced.
+run_all.py grades the data. The --pubmed pass resolves real citations into
+data/citations.csv, which the app then shows directly.
 
 ## Limitations
 
-The seed set is small and centered on the best-known interventions. Axis scores are
-judgment calls, made transparent by showing each score and its meaning. Attention is
-subjective. This is an educational research tool, not medical advice and not a
-recommendation to take or avoid anything.
+Eleven hand-curated rows, not a comprehensive database. Attention scores are editorial
+estimates, not measured. Grades reflect the rubric's design choices, which are stated
+openly so they can be argued with. The tool grades evidence quality; it does not give
+health advice.
 
-## Citations
+## Glossary
 
-Each intervention carries a citation query in data/interventions.csv, resolved to
-PubMed by src/pubmed.py. The grading method is in src/rubric.py.
+- **Intervention**: anything proposed to slow aging (a drug, diet, or supplement).
+- **Evidence axis**: one of six scored questions about the quality of the proof.
+- **Replication**: an independent lab repeating a result; the core test of whether a
+  finding is real.
+- **Human trial / RCT**: a controlled study in people; required here for the top grade.
+- **Lifespan vs healthspan**: how long you live vs how long you stay healthy.
+- **PubMed**: the public US index of biomedical research articles.
+- **Attention**: an editorial 1-to-5 estimate of public buzz, labeled as a judgment.
+
+## Citation and disclaimer
+
+Citations resolve live from PubMed (NCBI E-utilities). A conservative starting
+reference, not medical advice.
