@@ -56,6 +56,21 @@ with st.expander("New here? How grades work", expanded=False):
         "graded A. The best evidence today earns a B."
     )
 
+with st.expander("Key terms"):
+    st.markdown(
+        "- **Intervention**: a drug, supplement, or treatment claimed to slow aging.\n"
+        "- **Mechanism**: how it is thought to work in the body.\n"
+        "- **Evidence grade**: a letter from this tool's fixed rubric. Grade A needs a "
+        "human lifespan trial, which nothing has yet, so B is the current ceiling.\n"
+        "- **Replication**: whether a result has been independently repeated, not just "
+        "found once.\n"
+        "- **Translational readiness**: how close an intervention is to real human use.\n"
+        "- **Surrogate vs hard outcome**: a surrogate is an indirect marker; a hard "
+        "outcome is lifespan or death itself. Only hard outcomes earn the top grade.\n"
+        "- **PubMed**: the public database of biomedical studies that the citations link "
+        "to."
+    )
+
 best = df[df["grade"] == "B"]
 c1, c2, c3 = st.columns(3)
 c1.metric("Interventions", len(df), help="Number in this seed database. Extend it over time.")
